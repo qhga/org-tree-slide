@@ -112,6 +112,16 @@ When nil, the body of the subtrees will be revealed."
   :type 'boolean
   :group 'org-tree-slide)
 
+(defcustom org-tree-slide-header-breadcrumbs-only nil
+  "Only show the breadcrumbs instead of the other header elements."
+  :type 'boolean
+  :group 'org-tree-slide)
+
+(defcustom org-tree-slide-header-show-slide-number nil
+  "Show the current slide number in front of the Breadcrumbs."
+  :type 'boolean
+  :group 'org-tree-slide)
+
 (defcustom org-tree-slide-content-margin-top 2
   "Specify the margin between the slide header and its content."
   :type 'integer
@@ -726,7 +736,7 @@ If HEADING-LEVEL is non-nil, the provided outline level is checked."
 If non-nil, it should be a string used as a delimiter used to
 concat the headers."
   :type '(choice (const :tag "Don't display breadcrumbs" nil)
-                 (string :tag "Delimiter"))
+          (string :tag "Delimiter"))
   :group 'org-tree-slide)
 
 (defcustom org-tree-slide-breadcrumbs-hide-todo-state t
@@ -793,19 +803,30 @@ Some number of BLANK-LINES will be shown below the header."
                'face
                'org-tree-slide-header-overlay-face)
   (if org-tree-slide-header
-      (overlay-put org-tree-slide--header-overlay 'display
-                   (concat (if org-tree-slide-title org-tree-slide-title
-                             (buffer-name))
-                           "\n"
-                           org-tree-slide-date "  "
-                           (when org-tree-slide-author
-                             (concat org-tree-slide-author "  "))
-                           (when org-tree-slide-email
-                             (concat "<" org-tree-slide-email ">"))
-                           (when org-tree-slide-breadcrumbs
-                             (concat "\n" (org-tree-slide--get-parents
-                                           org-tree-slide-breadcrumbs)))
-                           (org-tree-slide--get-blank-lines blank-lines)))
+      (if org-tree-slide-header-breadcrumbs-only
+          (overlay-put org-tree-slide--header-overlay 'display
+                       (concat
+                        (when org-tree-slide-breadcrumbs
+                          (concat
+                           (when org-tree-slide-header-show-slide-number
+                             (org-tree-slide--count-slide (point)))
+                           " "
+                           (org-tree-slide--get-parents
+                            org-tree-slide-breadcrumbs)))
+                        (org-tree-slide--get-blank-lines blank-lines)))
+        (overlay-put org-tree-slide--header-overlay 'display
+                     (concat (if org-tree-slide-title org-tree-slide-title
+                               (buffer-name))
+                             "\n"
+                             org-tree-slide-date "  "
+                             (when org-tree-slide-author
+                               (concat org-tree-slide-author "  "))
+                             (when org-tree-slide-email
+                               (concat "<" org-tree-slide-email ">"))
+                             (when org-tree-slide-breadcrumbs
+                               (concat "\n" (org-tree-slide--get-parents
+                                             org-tree-slide-breadcrumbs)))
+                             (org-tree-slide--get-blank-lines blank-lines))))
     (overlay-put org-tree-slide--header-overlay 'display
                  (org-tree-slide--get-blank-lines blank-lines))))
 
